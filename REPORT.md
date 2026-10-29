@@ -357,7 +357,7 @@ The second grid search ([Figure](#fig-cellpose-grid-search-auto), [Figure](#fig-
 
 ![cellpose grid search overlays auto](report_assets/cellpose-grid-search-overlays-auto.png)
 
-*cellpose grid search overlays auto*
+*Cellpose grid search overlays with auto diameter*
 
 On [Figure](#fig-cellpose-grid-search-auto), we see more subtle and sometimes even insignificant changes in the masks caused by parameter changes. Most bars lie within 4% relative to the baseline, while the others are up to approximately 8%. Therefore, here we are testing the sensitivity of the model to `cellprob_threshold` and `flow_threshold`.
 
@@ -621,6 +621,18 @@ The model performance metrics in [Table](#tab-accuracy) and [Table](#tab-f1-scor
 | SVM | 0.69 | 0.49 | 0.81 | 0.52 | 0.56 |
 | Log Reg | 0.67 | 0.47 | 0.78 | 0.50 | 0.52 |
 
+<a id="table-precision-and-recall"></a>
+
+**Precision and recall**
+
+| Model | DMSO P | DMSO R | Lov. P | Lov. R | AZ-U P | AZ-U R | Eto. P | Eto. R | AZ258 P | AZ258 R |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Drug-only RF | -- | -- | 0.47 | 0.65 | 0.89 | 0.81 | 0.70 | 0.63 | 0.59 | 0.64 |
+| Drug-only SVM | -- | -- | 0.47 | 0.68 | 0.91 | 0.79 | 0.66 | 0.58 | 0.53 | 0.64 |
+| Random Forest | 0.73 | 0.67 | 0.46 | 0.60 | 0.86 | 0.74 | 0.53 | 0.57 | 0.53 | 0.64 |
+| SVM | 0.78 | 0.62 | 0.39 | 0.66 | 0.88 | 0.74 | 0.51 | 0.53 | 0.49 | 0.65 |
+| Log Reg | 0.75 | 0.61 | 0.38 | 0.62 | 0.86 | 0.72 | 0.49 | 0.52 | 0.45 | 0.60 |
+
 ## Conclusion and perspectives
 
 Overall, this project developed an image-analysis pipeline for drug-treated cancer cell microscopy images, including image preprocessing, Cellpose-based segmentation, extraction of single-cell morphometric features, exploratory analysis, dimensionality reduction and treatment classification. The results show that the extracted morphology features contain a useful treatment-related signal, although the overlap between several classes limits classification performance.
@@ -642,17 +654,3 @@ We also began to check whether cell morphology differs across concentrations. We
 - [Alberts et al., 2002. *The Cytoskeleton*](https://www.ncbi.nlm.nih.gov/books/NBK21051/)
 - [Stringer et al., 2021. *Cellpose: A Generalist Algorithm for Cellular Segmentation*](https://doi.org/10.1038/s41592-020-01018-x)
 - [Cellpose documentation. *Cellpose documentation*](https://cellpose.readthedocs.io/en/latest/)
-
-## Appendix
-
-<a id="table-precision-and-recall"></a>
-
-**Precision and recall**
-
-| Model | DMSO P | DMSO R | Lov. P | Lov. R | AZ-U P | AZ-U R | Eto. P | Eto. R | AZ258 P | AZ258 R |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Drug-only RF | -- | -- | 0.47 | 0.65 | 0.89 | 0.81 | 0.70 | 0.63 | 0.59 | 0.64 |
-| Drug-only SVM | -- | -- | 0.47 | 0.68 | 0.91 | 0.79 | 0.66 | 0.58 | 0.53 | 0.64 |
-| Random Forest | 0.73 | 0.67 | 0.46 | 0.60 | 0.86 | 0.74 | 0.53 | 0.57 | 0.53 | 0.64 |
-| SVM | 0.78 | 0.62 | 0.39 | 0.66 | 0.88 | 0.74 | 0.51 | 0.53 | 0.49 | 0.65 |
-| Log Reg | 0.75 | 0.61 | 0.38 | 0.62 | 0.86 | 0.72 | 0.49 | 0.52 | 0.45 | 0.60 |
