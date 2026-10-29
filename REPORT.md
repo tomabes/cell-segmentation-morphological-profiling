@@ -36,12 +36,6 @@ The project uses the image set [Broad Bioimage Benchmark Collection, BBBC021](ht
 
 Each field of view is therefore acquired in 3 channels: the signal from nuclei, microtubules, and actin separately. Each channel is stored as a grayscale TIFF. Several cellular structures are included because a single structure does not describe the entire morphology of a cell. Nuclei help count cells and serve as markers for segmentation. Microtubules provide information about cytoskeletal organisation. The actin cytoskeleton provides information about cell boundaries and cell shape. In other words, DAPI helps show where the cells are, while tubulin and actin help reveal how drug treatment changes cellular structure.
 
-<a id="fig-hierarchy"></a>
-
-![Plate-well-field hierarchy](report_assets/hierarchy.png)
-
-*Plate-well-field hierarchy*
-
 DAPI (4',6-diamidino-2-phenylindole) is a fluorescent DNA-binding dye and is therefore used to visualize cell nuclei. In the image-based profiling assay used for this type of data, the actin cytoskeleton is visualized with fluorescently labeled phalloidin, while the microtubule cytoskeleton is detected using an anti-$β$-tubulin antibody with a fluorescent secondary antibody [Caie et al., 2010](https://doi.org/10.1158/1535-7163.MCT-09-1148). Actin filaments and microtubules are two major components of the cytoskeleton: actin filaments contribute to cell-surface shape, protrusions, movement, attachment to the substratum, and muscle contraction, whereas microtubules support intracellular transport and reorganize into the mitotic spindle during cell division [Alberts et al., 2002](https://www.ncbi.nlm.nih.gov/books/NBK21051/).
 
 The metadata are stored in two CSV files:
@@ -53,9 +47,21 @@ From `BBBC021_v1_image.csv`, we learn that each row represents one field of view
 
 In total, the dataset contains 113 compounds x 8 concentrations x 3 replicates.
 
+<a id="fig-hierarchy"></a>
+
+![Plate-well-field hierarchy](report_assets/hierarchy.png)
+
+*Plate-well-field hierarchy*
+
 As shown in [Figure](#fig-hierarchy), all images were acquired in 55 96-well plates, which are laboratory plates with wells where cell cultures are grown. One plate corresponds to one ZIP archive of 700 MB. Each plate has 96 wells; each well contains either the control condition (DMSO) or one treatment with one compound at one concentration. A site / field of view is one photographed area within a well, usually 4 sites per well. The three TIFF files are the three channels of the same site.
 
 Each image is a microscopic field of view containing several dozen MCF-7 cells.
+
+### Compound selection
+
+As shown in [Table](#tab-moa), it can be seen that all compounds in the dataset can be divided into 12 mechanisms of action, not counting one DMSO control. There are actin disruptors, Aurora kinase inhibitors, DNA damage mechanisms, etc.
+
+For this study, we would like to choose compounds that are as comparable as possible.
 
 <a id="tab-moa"></a>
 
@@ -76,12 +82,6 @@ Each image is a microscopic field of view containing several dozen MCF-7 cells.
 | 10 | Microtubule stabilizers | docetaxel, epothilone B, taxol |
 | 11 | Protein degradation | ALLN, MG-132, lactacystin, proteasome inhibitor I |
 | 12 | Protein synthesis | anisomycin, cyclohexamide, emetine |
-
-### Compound selection
-
-As shown in [Table](#tab-moa), it can be seen that all compounds in the dataset can be divided into 12 mechanisms of action, not counting one DMSO control. There are actin disruptors, Aurora kinase inhibitors, DNA damage mechanisms, etc.
-
-For this study, we would like to choose compounds that are as comparable as possible.
 
 Firstly, compounds from different MoA groups should be selected. This way, we will probably obtain the most morphologically distinct cell phenotypes. This is not guaranteed, but it is likely. The aim of the project is not to conduct an exhaustive analysis, but to test whether, in principle, it is possible to distinguish some phenotypes of cells treated with different compounds using machine learning.
 
@@ -111,11 +111,8 @@ Therefore, the compromise chosen for the project ([Table](#tab-compounds)) is th
 
 ### Expectations for morphology
 
-<a id="fig-example"></a>
-
-![Example field for each compound](report_assets/example-field-for-each-treatment.png)
-
-*Example field for each compound*
+<details>
+<summary><strong>Drugs description</strong></summary>
 
 `DMSO` is a solvent, used as a control to avoid confusing the effect of the solvent with the effect of the drug; it is not expected to do anything and provides normal cells for comparison.
 
@@ -127,7 +124,24 @@ Therefore, the compromise chosen for the project ([Table](#tab-compounds)) is th
 
 `AZ258` is an Aurora kinase inhibitor, disrupting the process of cell division regulated by Aurora kinase; expected effects include disruption of the mitotic spindle, chromosome segregation errors, cell-cycle arrest, apoptosis, cells becoming stuck in mitosis, rounded morphology, and abnormal nuclei.
 
+</details>
+
 As shown in the [Figure](#fig-example), DMSO looks like a control condition with mixed morphology: many cells are well spread, cell-cell contacts are present, and there is natural variation in cell shape. Lovastatin appears more sparse; the cells more often form separate groups, with less of a dense continuous layer. The description also fits AZ-U well: dense clusters are visible, and the cells look smaller and tightly packed. For Etoposide, the description does not fully match this example field, which is still quite dense. However, 24 hours may not be enough to induce extensive apoptosis, and the compound may have mainly arrested cell division. Some cells show elongated protrusions and heterogeneous morphology, but these features are not specific enough to conclude failed cell division. They can be interpreted as changes in cell shape and cytoskeletal organization under DNA-damage stress. AZ258 generally matches the expected description: some cells appear to be in the process of division, and double or triple nuclei are visible.
+
+<a id="fig-example"></a>
+
+![Example field for each compound](report_assets/example-field-for-each-treatment.png)
+
+*Example field for each compound*
+
+### Plate selection
+
+Each plate is a separate ZIP file of about 700 MB. Downloading all 55 plates would be about 40 GB, which is not necessary for this analysis. 
+
+<details>
+<summary><strong>Plate filtering</strong></summary>
+
+We want to download the minimum number of ZIP archives while covering as many of the required compounds as possible ([Table](#tab-plates)).
 
 <a id="tab-plates"></a>
 
@@ -148,10 +162,6 @@ As shown in the [Figure](#fig-example), DMSO looks like a control condition with
 | Week9_39222 | [DMSO, Lovastatin] |
 | **Week4_27821** | **[AZ258, DMSO]** |
 
-### Plate selection
-
-Each plate is a separate ZIP file of about 700 MB. Downloading all 55 plates would be about 40 GB, which is not necessary for this analysis. We want to download the minimum number of ZIP archives while covering as many of the required compounds as possible ([Table](#tab-plates)).
-
 Therefore, we need to filter and download plates that contain the largest possible number of compounds selected for analysis at the same time.
 
 In `BBBC021_v1_moa.csv` we cannot find the complete experiment index, but a ground truth table for mechanisms of action. It contains only those compound-concentration pairs that the dataset authors considered meaningful for MOA classification.
@@ -165,6 +175,8 @@ We will also take the middle concentrations of the compounds for the main analys
 Nevertheless, we cannot confidently claim that all observed differences are due to the drug effect rather than plate or well effects. Hundreds of cells from the same plate or field of view cannot be treated as fully independent observations.
 
 We will also take DMSO from all plates to check whether the controls from different plates are comparable (no batch or plate effect).
+
+</details>
 
 After downloading and extracting the files, we will have 52 fields of view in total: 48 treatment fields of view (4 compounds × 3 concentrations × 4 fields per compound-concentration pair) plus 4 DMSO control fields of view. This gives 52 fields of view × 3 channels = 156 TIFF files.
 
@@ -231,13 +243,8 @@ Cellpose is a family of convolutional neural networks. The **`cyto3`** model is 
 - **cytoplasm** -- actin, which shows the overall cell shape;
 - **nuclei** -- DAPI.
 
-<a id="fig-cellpose-grid-search"></a>
-
-![Cell count during Cellpose grid search](report_assets/cellpose-grid-search-cell-count-growth.png)
-
-*Cell count during Cellpose grid search*
-
-### Cellpose hyperparameter tuning
+<details>
+<summary><strong>Cellpose hyperparameters</strong></summary>
 
 According to the Cellpose v3.1 documentation, the default parameters are:
 
@@ -253,12 +260,6 @@ Cellpose uses the diameter to rescale the image before segmentation. The v3 cyto
 
 - `diameter = None` or 0: Cellpose estimates the object size automatically.
 - `diameter > 0`: the expected object diameter is specified manually.
-
-<a id="fig-grid-diameter-overlays"></a>
-
-![cellpose grid search overlays diameters short](report_assets/cellpose-grid-search-overlays-diameters-short.png)
-
-*Сellpose grid search overlays for diameters*
 
 Automatic diameter estimation is a two-step procedure. Cellpose first runs the image through the network and obtains a style vector, then uses a linear regression model to estimate object size. The image is resized according to this estimate, Cellpose is run again, and the final diameter is refined from the median diameter of the predicted ROIs. If the specified diameter is too small, Cellpose may over-split cells; if it is too large, neighbouring cells may be merged.
 
@@ -282,17 +283,34 @@ This parameter is a mask-quality filter. After Cellpose predicts flows and const
 - Higher values are more permissive: more ROIs are retained, but some may have poor or biologically implausible shapes.
 - Increasing `flow_threshold` can help if Cellpose returns fewer ROIs than expected; decreasing it can help if too many ill-shaped ROIs are accepted.
 
+</details>
+
 ### Grid search with set diameter
 
 To optimize the Cellpose configuration, a grid search ([Figure](#fig-cellpose-grid-search), [Figure](#fig-grid-diameter-overlays)) was performed around the default settings. The baseline configuration used automatic diameter estimation, `cellprob_threshold=0.0`, and `flow_threshold=0.4`. For the grid search, `diameter` was tested as `None`, 50, 70, and 90 pixels. These values were chosen because a preliminary Cellpose run with automatic diameter estimation returned average cell diameters between approximately 43 and 96 pixels for different compounds, so the tested manual diameters covered this observed scale range. The `flow_threshold` values 0.2, 0.6, and 1.0 were selected to test settings below and above the default value of 0.4. The `cellprob_threshold` values -1.0, -0.5, and 1.0 were selected to cover a range around the default value of 0.0, from more permissive to stricter foreground acceptance. Each parameter combination was applied to the same selected fields, and the resulting masks were compared by object counts and visual overlay inspection.
+
+<a id="fig-grid-diameter-overlays"></a>
+
+![cellpose grid search overlays diameters short](report_assets/cellpose-grid-search-overlays-diameters-short.png)
+
+*Сellpose grid search overlays for diameters*
 
 On [Figure](#fig-cellpose-grid-search), the diagram shows the change in the number of detected objects relative to the model with default parameters. A high bar does not always mean better performance: it can reflect either true recovery of missed cells or over-segmentation.
 
 The main conclusion is that `flow=0.2` should be excluded. In all panels and for all compounds, the bars for `flow=0.2` go strongly downward. At the same time, visual inspection of the masks shows that whole cell regions and clusters disappear. This looks like overly strict mask filtering by flow quality: complex, dim, merged, or poorly separable cells receive unstable flows and are excluded.
 
+<a id="fig-cellpose-grid-search"></a>
+
+![Cell count during Cellpose grid search](report_assets/cellpose-grid-search-cell-count-growth.png)
+
+*Cell count during Cellpose grid search*
+
 **Effect of diameter**
 
 Different compounds respond to `diameter` differently because the real cell sizes are very different.
+
+<details>
+<summary><strong>Drugs and diameters</strong></summary>
 
 **AZ-U** cells are the smallest ones (`Cellpose mean diameter = 43.0`). They are gathered into compact clusters, have blurred boundaries and merged nuclei, sometimes with 3--5 nuclei in one clump, making it difficult to determine where one cell ends and another begins. They are difficult to segment. Therefore, with `d=50`, segmentation is generally acceptable, but some small isolated cells are lost. With `d=70`, and especially with `d=90`, the model starts merging several cells into one and loses cells.
 
@@ -303,6 +321,8 @@ Different compounds respond to `diameter` differently because the real cell size
 **Etoposide** cells are larger mainly because of protrusions (`Cellpose mean diameter = 80.7`). They lie close to each other, but their boundaries are blurred. They have protrusions that the model identifies as separate cells, and none of the tested Cellpose parameters can fully solve this. However, the nuclei are clear, so the overall segmentation difficulty is moderate. They are segmented well with `d=70/90`, while with `d=50` the cells are slightly fragmented.
 
 **AZ258** cells are the largest in the dataset (`Cellpose mean diameter = 96.3`). They mostly lie close to each other, have fairly clear contours and large nuclei, and are relatively convenient for segmentation. For them, `d=50/70` are clearly too small and increase the number of segmented cells by cutting large cells into pieces or by narrowing mask boundaries so that they do not reach the real cell borders. At the same time, even `d=90` is not ideal, because a large dim cell is clearly under-segmented or split in half. This shows that with a fixed diameter, information about very large but real cells is lost.
+
+</details>
 
 Therefore, a fixed diameter for all compounds is not suitable here. `d=50` does not strongly harm small or medium cells, but does not allow normal segmentation of AZ258 and Etoposide. `d=70/90` do not strongly harm large AZ258 and Etoposide cells, but cause under-segmentation of Lovastatin and AZ-U. The most stable option for the whole dataset is `diameter=None`, i.e. auto-estimation.
 
@@ -322,6 +342,11 @@ For fine-tuning, we will perform a second grid search.
 
 The second grid search ([Figure](#fig-cellpose-grid-search-auto), [Figure](#fig-grid-auto-overlays)) was designed as a refinement of the first one. The first grid showed that manually fixing `diameter` is not a robust strategy for this dataset: the apparent cell diameter varies strongly between compounds, because different treatments affect cell size and morphology in different ways. Since the final pipeline should work across compounds with different phenotypic effects, a single manually selected diameter would either over-split larger cells or merge smaller neighbouring cells. Therefore, in the second grid search, `diameter` was kept automatic for all variants, and the search focused on `cellprob_threshold` and `flow_threshold`. The value `flow_threshold=0.2` was also removed, because in the first grid search it performed poorly and caused entire clusters of cells to be lost. The second grid tested `flow_threshold` values 0.4, 0.6, 0.8, and 1.0, covering the default setting and more permissive mask-quality filtering. The `cellprob_threshold` range was expanded to -2.0, -1.0, 0.0, 1.0, and 2.0, because the first grid did not clearly identify which threshold was best. As before, all variants were evaluated on the same selected fields using object counts and visual overlay inspection.
 
+<a id="fig-cellpose-grid-search-auto"></a>
+
+![Cell count during Cellpose grid search with automatic diameter](report_assets/cellpose-grid-search-cell-count-growth-auto.png)
+
+*Cell count during Cellpose grid search with automatic diameter*
 
 <a id="fig-grid-auto-overlays"></a>
 
@@ -329,15 +354,12 @@ The second grid search ([Figure](#fig-cellpose-grid-search-auto), [Figure](#fig-
 
 *cellpose grid search overlays auto*
 
-<a id="fig-cellpose-grid-search-auto"></a>
-
-![Cell count during Cellpose grid search with automatic diameter](report_assets/cellpose-grid-search-cell-count-growth-auto.png)
-
-*Cell count during Cellpose grid search with automatic diameter*
-
 On [Figure](#fig-cellpose-grid-search-auto), we see more subtle and sometimes even insignificant changes in the masks caused by parameter changes. Most bars lie within 4% relative to the baseline, while the others are up to approximately 8%. Therefore, here we are testing the sensitivity of the model to `cellprob_threshold` and `flow_threshold`.
 
 The main conclusion is that `diameter=None` works robustly for all compounds, and further parameter tuning gives relatively small changes in cell count.
+
+<details>
+<summary><strong>Drugs and parameters</strong></summary>
 
 For DMSO, `cp` and `flow` almost do not change the result. Visually ([Figure](#fig-grid-auto-overlays)), there are no sharp changes in segmentation. Slight over-segmentation starts only at the very end, at `cp=2.0, flow=1.0`. At `cp=-2.0`, it is visible that the margins of the masks from the real cell boundaries become larger, but overall the segmentation remains acceptable.
 
@@ -348,6 +370,8 @@ For Lovastatin, `cp=-2.0, flow=0.4` is definitely unsuitable because cells are l
 AZ-U is a difficult case. The baseline with default parameters is definitely unsuitable for it, as are some negative `cp` values and even `cp=1.0, flow=0.4`, because of under-segmentation. At `cp>=2.0`, part of the cells is already cut off and very small cells are created from cytoplasm. Therefore, the working zone for AZ-U lies at the intersection of `flow=0.6/0.8` and `cp=-2.0/-1.0/0.0/1.0`, although there is still slight under-segmentation and slight over-segmentation of small cell fragments.
 
 For Etoposide, the default parameters are also unsuitable because cells are lost. However, the other parameters are acceptable, although negative `cp` values expand the mask boundaries compared with the cell boundaries. The most optimal choice is at the intersection of `flow=0.6/0.8` and `cp=0.0--2`.
+
+</details>
 
 Increasing it to `flow=0.6` or `flow=0.8` often gives the best balance: it recovers some objects, but does not yet preserve too many extra masks. `flow=1.0` gives the maximum number of cells, but the masks show that part of this increase may be over-segmentation.
 
@@ -360,13 +384,13 @@ In addition to tuning hyperparameters, such as the expected cell diameter, the c
 1. **Merging actin and tubulin into one cytoplasmic channel** using `np.maximum` ([Figure](#fig-merged-actin-tubulin)). Both proteins are located in the cytoplasm; when one of them is depolymerized, the other can partially compensate for the signal. Logically, this works like an "OR" operation between the two signals. We merge these channels both without CLAHE and after CLAHE, to compare whether there is a combined effect.
 2. **CLAHE (Contrast-Limited Adaptive Histogram Equalization)** -- local contrast enhancement ([Figure](#fig-clahe-actin)). This method divides the image into small regions and normalizes the contrast separately within each region, while limiting the amplification so that noise does not increase too much. This is a standard method in medical imaging, including ultrasound, X-ray images, and histology.
 
+Both methods, together with the tuned hyperparameters, can complement each other.
+
 <a id="fig-merged-actin-tubulin"></a>
 
 ![Merged actin and tubulin channel](report_assets/merged-actin-tubulin.png)
 
 *Merged actin and tubulin channel*
-
-Both methods, together with the tuned hyperparameters, can complement each other.
 
 For CLAHE, we will use `equalize_adapthist`. It has two parameters:
 
@@ -434,17 +458,9 @@ We check this in [Figure](#tab-boxplot). AZ-U has a strong outlier, which explai
 
 Regarding the similarity between plates, we clearly see clusters by compound. Etoposide and AZ258 are especially compact, and they also have the lowest number of objects. This could be an important sign of drug effect if the effect is truly biological. It could be explained by reduced cell survival under drug treatment. However, this requires consultation with a biologist and validation on a larger sample. Our small dataset does not allow us to make such strong conclusions. We can only state that, in this work, the number of cells is visually consistent with the Cellpose mask overlays.
 
-<a id="fig-outliers-az-u"></a>
-
-![Outliers AZ-U](report_assets/outliers-az-u.png)
-
-*Outliers AZ-U*
-
 ### Morphometry collection
 
 We confirmed that the segmentation can be considered valid. We can now extract data from the masks. The `skimage.measure.regionprops` method computes dozens of geometric and intensity-based characteristics for each cell in the mask. [Table](#tab-morphometry) lists the 11 most interpretable features that we will use in this work.
-
-Before working with these features, however, incomplete cells must be removed so that they do not distort the data. Labeled objects that touch the image border are removed using the `clear_border` method from skimage.
 
 <a id="tab-morphometry"></a>
 
@@ -463,6 +479,8 @@ Before working with these features, however, incomplete cells must be removed so
 | `aspect_ratio` | `major_axis_length / minor_axis_length`; a measure of elongation |
 | `mean_actin` | Average brightness of the actin channel |
 | `mean_tubulin` | Average brightness of the tubulin channel |
+
+Before working with these features, however, incomplete cells must be removed so that they do not distort the data. Labeled objects that touch the image border are removed using the `clear_border` method from skimage.
 
 Next, we filter out artefacts: objects that are either too small or too large. Small objects may correspond to cell fragments or imaging artefacts, while large objects may represent merged cells that were segmented incorrectly. To avoid removing biologically relevant cells, we estimate the threshold values from the expected diameters returned by Cellpose, which correspond to areas from 1,452 px to 7,284 px ($A ≈ π (d/2)^2$).
 
@@ -490,25 +508,19 @@ We now have a cell-features table. This allows us to address the main question o
 
 To do this, we build violin plots for the selected features, apply PCA dimensionality reduction to test whether the treatments are separable by class, build pairplots to check whether the treatments separate by combinations of features, and summarize the z-normalized mean feature values by compound in a heatmap.
 
+<a id="fig-violins"></a>
+
+![Morphometry violins](report_assets/morphometry-violin.png)
+
+*Morphometry violins*
+
 The feature violin plots in [Figure](#fig-violins) show that there are differences between the treatments. The main separation is observed in size-related features: `area`, `perimeter`, `equivalent_diameter`, `major_axis_length`, and `minor_axis_length`, which are expected to be strongly correlated. AZ-U shows the smallest phenotype, Lovastatin is closest to it, whereas AZ258 and Etoposide have the largest cells, with DMSO lying in between.
-
-<a id="fig-pc1-pc2"></a>
-
-![PC1/PC2](report_assets/pc1-pc2.png)
-
-*PC1/PC2*
 
 <a id="fig-pairs"></a>
 
 ![Morphometry PCA informative pairs](report_assets/morphometry-pca-informative-pairs.png)
 
 *Morphometry PCA informative pairs*
-
-<a id="fig-violins"></a>
-
-![Morphometry violins](report_assets/morphometry-violin.png)
-
-*Morphometry violins*
 
 The separation by shape is weaker. `eccentricity` and `aspect_ratio` strongly overlap between compounds, meaning that elongation alone does not separate the classes well. `solidity` is more informative: Lovastatin has a noticeably wider lower tail, which may indicate more irregular or complex masks, or differences in cell shape that is actually true and seen on the images.
 
@@ -530,6 +542,12 @@ In terms of intensity, DMSO and AZ-U are higher in `mean_tubulin`, Lovastatin is
 
 Interestingly, PCA in [Figure](#fig-pc1-pc2) shows strong overlap between the groups, whereas the pairplots in [Figure](#fig-pairs) separate the data visually more clearly than the PC1/PC2 projection. The feature pairs show that some classes differ in cell size, shape, and tubulin intensity, although the overlap is still substantial. PCA is likely less suitable for this specific comparison because it is not designed to separate classes; it only finds the axes of maximum variance, rather than the best boundaries between compounds.
 
+<a id="fig-pc1-pc2"></a>
+
+![PC1/PC2](report_assets/pc1-pc2.png)
+
+*PC1/PC2*
+
 ### Classifiers
 
 We build simple classifiers using the extracted features to test whether the classes of compounds used to treat the cells can be distinguished based on morphology.
@@ -550,13 +568,13 @@ First, it is important to split the data into training and test sets to avoid da
 
 We train four classifiers: Logistic Regression as a simple linear baseline model, Random Forest as a nonlinear baseline model, SVM as a nonlinear margin-based classifier, and Decision Tree as an interpretable model.
 
+Separately, we also train drug-only models without `DMSO`: an SVM and a Random Forest. This allows us to test how well the models distinguish only active treatments without the control class.
+
 <a id="fig-conf-matrix"></a>
 
 ![Confusion matrices](report_assets/rf-lg-svm.png)
 
 *Confusion matrices*
-
-Separately, we also train drug-only models without `DMSO`: an SVM and a Random Forest. This allows us to test how well the models distinguish only active treatments without the control class.
 
 <a id="fig-drug-conf-matrix"></a>
 
@@ -606,7 +624,7 @@ In future work, the analysis could be strengthened by including a larger number 
 
 It would also be valuable to integrate human-guided annotation or segmentation tools such as MedSAM, or similar services, and compare these annotations with the fully automatic masks. This would help assess segmentation quality more directly.
 
-We also began to check (in Appendix) whether cell morphology differs across concentrations. We originally downloaded the subset so that each compound, except DMSO, had three concentrations. For the main analysis, we used the middle concentration. We then use all three concentrations and plot the number of segmented cells and morphological features as a function of concentration. This analysis could be explored in more depth in the future.
+We also began to check whether cell morphology differs across concentrations. We originally downloaded the subset so that each compound, except DMSO, had three concentrations. For the main analysis, we used the middle concentration. We then use all three concentrations and plot the number of segmented cells and morphological features as a function of concentration. This analysis could be explored in more depth in the future.
 
 ## References
 
@@ -633,9 +651,3 @@ We also began to check (in Appendix) whether cell morphology differs across conc
 | Random Forest | 0.73 | 0.67 | 0.46 | 0.60 | 0.86 | 0.74 | 0.53 | 0.57 | 0.53 | 0.64 |
 | SVM | 0.78 | 0.62 | 0.39 | 0.66 | 0.88 | 0.74 | 0.51 | 0.53 | 0.49 | 0.65 |
 | Log Reg | 0.75 | 0.61 | 0.38 | 0.62 | 0.86 | 0.72 | 0.49 | 0.52 | 0.45 | 0.60 |
-
-<a id="fig-cellpose-flows-and-cellprob"></a>
-
-![Cellpose flows and cell probability](report_assets/cellpose-flows-and-cellprob.png)
-
-*Cellpose flows and cell probability*
