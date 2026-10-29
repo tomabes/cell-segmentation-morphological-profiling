@@ -176,12 +176,6 @@ Each field of view consists of three TIFF files of `uint16` sized 1024x1280. Aft
 - normalize it to the $[0, 1]$ range by clipping the darkest 1% and brightest 1% of pixels using percentiles. Fluorescence images almost always contain outliers, such as individual extremely bright pixels, artifacts, or especially bright spots within cells. If we do not clip them, standard min-max normalization can make the rest of the image look gray. Therefore, percentile clipping is commonly used;
 - build an RGB composite for visualization: red for actin, green for tubulin, and blue for DAPI. We do this after normalizing each channel separately, because if the channels are first combined into an RGB image and then normalized together, one channel may dominate the others due to differences in brightness.
 
-<a id="fig-watershed-stardist-cellpose"></a>
-
-![Comparison of Watershed, StarDist and Cellpose](report_assets/watershed-stardist-cellpose.png)
-
-*Comparison of Watershed, StarDist and Cellpose*
-
 ### Watershed baseline
 
 Marker-controlled watershed was used as a classical baseline. DAPI and actin were smoothed; Otsu thresholds produced a nuclei mask and a broader cellular mask; nuclear centers became markers; and watershed partitioned the negative distance transform inside the combined actin+nuclei region. The method is transparent and computationally inexpensive, but its result depends strongly on thresholding and marker placement [Beucher and Lantuejoul, 1979](https://www.researchgate.net/publication/230837383_Use_of_Watersheds_in_Contour_Detection).
@@ -193,6 +187,12 @@ The baseline worked for isolated cells but was unreliable in dense fields: misse
 StarDist represents nuclei as star-convex polygons predicted from the normalized DAPI channel [Schmidt et al., 2018](https://doi.org/10.1007/978-3-030-00934-2_30). In this project, the pretrained `2D_versatile_fluo` model was used both for direct nuclei counting and as a source of markers for watershed over a combined actin+tubulin cellular mask.
 
 The hybrid approach improved marker placement but remained dependent on thresholded cytoskeletal signal for whole-cell boundaries. Its counts were close to Cellpose for most compounds, while AZ258 showed the largest disagreement: StarDist over-segmented small nuclear fragments and missed some large touching nuclei. Without manually annotated whole-cell masks, this comparison is qualitative rather than an accuracy benchmark.
+
+<a id="fig-watershed-stardist-cellpose"></a>
+
+![Comparison of Watershed, StarDist and Cellpose](report_assets/watershed-stardist-cellpose.png)
+
+*Comparison of Watershed, StarDist and Cellpose*
 
 <a id="fig-az258-short"></a>
 
@@ -206,33 +206,17 @@ The hybrid approach improved marker placement but remained dependent on threshol
 
 *Nuclei count for StarDist and Cellpose*
 
-**Mean nuclei count by compound**
-
-| Compound | StarDist nuclei | Cellpose nuclei |
-| --- | ---: | ---: |
-| DMSO | 280.2 | 282.2 |
-| Lovastatin | 106.4 | 110.1 |
-| AZ-U | 272.9 | 287.2 |
-| Etoposide | 163.4 | 161.7 |
-| AZ258 | 177.3 | 140.4 |
-
 ### Cellpose
+
+Cellpose is a deep-learning-based segmentation algorithm pre-trained on highly diverse microscopy. Its diverse manually annotated dataset contained more than 70,000 segmented objects [Stringer et al., 2021](https://doi.org/10.1038/s41592-020-01018-x).
+
+The model is based on the U-Net architecture, a widely used neural network for biomedical image analysis. It first compresses the image through downsampling to extract global context and then restores it through upsampling back to the original resolution to define precise object boundaries. The authors added residual blocks and image style representation: skip connections are used between layers of the same size, together with global skip connections from image styles computed at the lowest resolution to all subsequent computational steps.
 
 <a id="fig-cellpose-flows-short"></a>
 
 ![Cellpose flows and cell probability (DMSO in the first line, Lovastatin in the second line)](report_assets/cellpose-flows-and-cellprob-short.png)
 
 *Cellpose flows and cell probability (DMSO in the first line, Lovastatin in the second line)*
-
-<a id="fig-cellpose-grid-search"></a>
-
-![Cell count during Cellpose grid search](report_assets/cellpose-grid-search-cell-count-growth.png)
-
-*Cell count during Cellpose grid search*
-
-Cellpose is a deep-learning-based segmentation algorithm pre-trained on highly diverse microscopy. Its diverse manually annotated dataset contained more than 70,000 segmented objects [Stringer et al., 2021](https://doi.org/10.1038/s41592-020-01018-x).
-
-The model is based on the U-Net architecture, a widely used neural network for biomedical image analysis. It first compresses the image through downsampling to extract global context and then restores it through upsampling back to the original resolution to define precise object boundaries. The authors added residual blocks and image style representation: skip connections are used between layers of the same size, together with global skip connections from image styles computed at the lowest resolution to all subsequent computational steps.
 
 To transform manually annotated masks into a vector flow representation that can be predicted by the neural network, the authors use a simulated diffusion process starting from the centre of the mask. This produces spatial gradients pointing toward the centre of the cell, including indirect paths around corners and complex shapes. The x and y gradients are combined into a single direction from 0° to 360°.
 
@@ -246,6 +230,12 @@ Cellpose is a family of convolutional neural networks. The **`cyto3`** model is 
 
 - **cytoplasm** -- actin, which shows the overall cell shape;
 - **nuclei** -- DAPI.
+
+<a id="fig-cellpose-grid-search"></a>
+
+![Cell count during Cellpose grid search](report_assets/cellpose-grid-search-cell-count-growth.png)
+
+*Cell count during Cellpose grid search*
 
 ### Cellpose hyperparameter tuning
 
@@ -294,18 +284,6 @@ This parameter is a mask-quality filter. After Cellpose predicts flows and const
 
 ### Grid search with set diameter
 
-<a id="fig-grid-auto-overlays"></a>
-
-![cellpose grid search overlays auto](report_assets/cellpose-grid-search-overlays-auto.png)
-
-*cellpose grid search overlays auto*
-
-<a id="fig-cellpose-grid-search-auto"></a>
-
-![Cell count during Cellpose grid search with automatic diameter](report_assets/cellpose-grid-search-cell-count-growth-auto.png)
-
-*Cell count during Cellpose grid search with automatic diameter*
-
 To optimize the Cellpose configuration, a grid search ([Figure](#fig-cellpose-grid-search), [Figure](#fig-grid-diameter-overlays)) was performed around the default settings. The baseline configuration used automatic diameter estimation, `cellprob_threshold=0.0`, and `flow_threshold=0.4`. For the grid search, `diameter` was tested as `None`, 50, 70, and 90 pixels. These values were chosen because a preliminary Cellpose run with automatic diameter estimation returned average cell diameters between approximately 43 and 96 pixels for different compounds, so the tested manual diameters covered this observed scale range. The `flow_threshold` values 0.2, 0.6, and 1.0 were selected to test settings below and above the default value of 0.4. The `cellprob_threshold` values -1.0, -0.5, and 1.0 were selected to cover a range around the default value of 0.0, from more permissive to stricter foreground acceptance. Each parameter combination was applied to the same selected fields, and the resulting masks were compared by object counts and visual overlay inspection.
 
 On [Figure](#fig-cellpose-grid-search), the diagram shows the change in the number of detected objects relative to the model with default parameters. A high bar does not always mean better performance: it can reflect either true recovery of missed cells or over-segmentation.
@@ -342,13 +320,20 @@ For fine-tuning, we will perform a second grid search.
 
 ### Grid search (automatic diameter)
 
-<a id="fig-clahe-actin"></a>
-
-![Actin channel before and after CLAHE](report_assets/clahe-actin-before-after.png)
-
-*Actin channel before and after CLAHE*
-
 The second grid search ([Figure](#fig-cellpose-grid-search-auto), [Figure](#fig-grid-auto-overlays)) was designed as a refinement of the first one. The first grid showed that manually fixing `diameter` is not a robust strategy for this dataset: the apparent cell diameter varies strongly between compounds, because different treatments affect cell size and morphology in different ways. Since the final pipeline should work across compounds with different phenotypic effects, a single manually selected diameter would either over-split larger cells or merge smaller neighbouring cells. Therefore, in the second grid search, `diameter` was kept automatic for all variants, and the search focused on `cellprob_threshold` and `flow_threshold`. The value `flow_threshold=0.2` was also removed, because in the first grid search it performed poorly and caused entire clusters of cells to be lost. The second grid tested `flow_threshold` values 0.4, 0.6, 0.8, and 1.0, covering the default setting and more permissive mask-quality filtering. The `cellprob_threshold` range was expanded to -2.0, -1.0, 0.0, 1.0, and 2.0, because the first grid did not clearly identify which threshold was best. As before, all variants were evaluated on the same selected fields using object counts and visual overlay inspection.
+
+
+<a id="fig-grid-auto-overlays"></a>
+
+![cellpose grid search overlays auto](report_assets/cellpose-grid-search-overlays-auto.png)
+
+*cellpose grid search overlays auto*
+
+<a id="fig-cellpose-grid-search-auto"></a>
+
+![Cell count during Cellpose grid search with automatic diameter](report_assets/cellpose-grid-search-cell-count-growth-auto.png)
+
+*Cell count during Cellpose grid search with automatic diameter*
 
 On [Figure](#fig-cellpose-grid-search-auto), we see more subtle and sometimes even insignificant changes in the masks caused by parameter changes. Most bars lie within 4% relative to the baseline, while the others are up to approximately 8%. Therefore, here we are testing the sensitivity of the model to `cellprob_threshold` and `flow_threshold`.
 
@@ -388,6 +373,12 @@ For CLAHE, we will use `equalize_adapthist`. It has two parameters:
 - `kernel_size=128` -- the size of the local window. The smaller the window, the more aggressive the local normalization. We choose a default parameter equal to 1/8 of 1024, which fits the size of our images.
 - `clip_limit=0.01` -- limits the maximum contrast amplification within each local region. Values are normalized between 0 and 1; higher values give more contrast.
 
+<a id="fig-clahe-actin"></a>
+
+![Actin channel before and after CLAHE](report_assets/clahe-actin-before-after.png)
+
+*Actin channel before and after CLAHE*
+
 We applied CLAHE and channel merging separately, compared them with the tuned model, and also tested a combined approach in which all three strategies were used together with the hyperparameter-tuned model ([Figures](#fig-cellpose-enhanced-modes-cell-count) and [here](#fig-cellpose-clahe-and-others)).
 
 <a id="fig-cellpose-enhanced-modes-cell-count"></a>
@@ -409,12 +400,6 @@ CLAHE alone was also not very poor, but it was not fully reliable. It slightly i
 *Comparison of Cellpose with CLAHE, merged channels and tuned parameters*
 
 ### Segmentation quality control
-
-<a id="tab-boxplot"></a>
-
-![Cell counts per field by compound and plate](report_assets/cell-counts-per-field-by-compound-and-plate-copy.png)
-
-*Cell counts per field by compound and plate*
 
 After three grid searches for Cellpose parameter tuning and input improvement, we obtained a model that was used to generate cell masks for all five compounds at the middle concentration. Now it is important to check whether our expectations were met:
 
@@ -439,15 +424,21 @@ In [Table](#tab-summary), we see the mean number of segmented cells per field an
 
 We check this in [Figure](#tab-boxplot). AZ-U has a strong outlier, which explains its large standard deviation. However, the other three AZ-U fields are close to each other, which keeps the median more stable. We will not remove this outlier. Instead, we check the original image to see whether this field really contains so many cells or whether this is a segmentation error. As shown in [Figure](#fig-outliers-az-u), the mask overlay confirms that there are indeed many cells in this field, approximately twice as many as usual. Several cell clusters are located very close to each other. This is not a segmentation error, but a specific property of this image. Similar information can be obtained from the Lovastatin mask overlays: its outlier is also explained by a denser cell field.
 
+<a id="tab-boxplot"></a>
+
+![Cell counts per field by compound and plate](report_assets/cell-counts-per-field-by-compound-and-plate-copy.png)
+
+*Cell counts per field by compound and plate*
+
+[Figure](#tab-boxplot) also shows that DMSO fields from different plates are close in cell count, with approximately 250--300 objects per field and a median around 280. This is a high and relatively stable control. It suggests that the plates can be compared with each other, because their controls are similar.
+
+Regarding the similarity between plates, we clearly see clusters by compound. Etoposide and AZ258 are especially compact, and they also have the lowest number of objects. This could be an important sign of drug effect if the effect is truly biological. It could be explained by reduced cell survival under drug treatment. However, this requires consultation with a biologist and validation on a larger sample. Our small dataset does not allow us to make such strong conclusions. We can only state that, in this work, the number of cells is visually consistent with the Cellpose mask overlays.
+
 <a id="fig-outliers-az-u"></a>
 
 ![Outliers AZ-U](report_assets/outliers-az-u.png)
 
 *Outliers AZ-U*
-
-[Figure](#tab-boxplot) also shows that DMSO fields from different plates are close in cell count, with approximately 250--300 objects per field and a median around 280. This is a high and relatively stable control. It suggests that the plates can be compared with each other, because their controls are similar.
-
-Regarding the similarity between plates, we clearly see clusters by compound. Etoposide and AZ258 are especially compact, and they also have the lowest number of objects. This could be an important sign of drug effect if the effect is truly biological. It could be explained by reduced cell survival under drug treatment. However, this requires consultation with a biologist and validation on a larger sample. Our small dataset does not allow us to make such strong conclusions. We can only state that, in this work, the number of cells is visually consistent with the Cellpose mask overlays.
 
 ### Morphometry collection
 
@@ -521,13 +512,13 @@ The feature violin plots in [Figure](#fig-violins) show that there are differenc
 
 The separation by shape is weaker. `eccentricity` and `aspect_ratio` strongly overlap between compounds, meaning that elongation alone does not separate the classes well. `solidity` is more informative: Lovastatin has a noticeably wider lower tail, which may indicate more irregular or complex masks, or differences in cell shape that is actually true and seen on the images.
 
+The intensity features, `mean_actin` and `mean_tubulin`, also show shifts between groups, but these differences are less clean than those observed for size-related features. `mean_tubulin` appears more useful than `mean_actin`, although the overlap remains substantial.
+
 <a id="fig-zheatmap"></a>
 
 ![Morphometry heatmap](report_assets/morphometry-heatmap.png)
 
 *Morphometry heatmap*
-
-The intensity features, `mean_actin` and `mean_tubulin`, also show shifts between groups, but these differences are less clean than those observed for size-related features. `mean_tubulin` appears more useful than `mean_actin`, although the overlap remains substantial.
 
 The z-heatmap in [Figure](#fig-zheatmap) confirms what is visible in the violin plots. Here, size-related features also separate the groups most strongly. AZ258 is sharply above average in `area`, `perimeter`, `equivalent_diameter`, `major_axis_length`, and `minor_axis_length`; Etoposide is also above average, but less strongly. AZ-U, in contrast, is below average for almost all size features. DMSO is close to zero.
 
@@ -540,12 +531,6 @@ In terms of intensity, DMSO and AZ-U are higher in `mean_tubulin`, Lovastatin is
 Interestingly, PCA in [Figure](#fig-pc1-pc2) shows strong overlap between the groups, whereas the pairplots in [Figure](#fig-pairs) separate the data visually more clearly than the PC1/PC2 projection. The feature pairs show that some classes differ in cell size, shape, and tubulin intensity, although the overlap is still substantial. PCA is likely less suitable for this specific comparison because it is not designed to separate classes; it only finds the axes of maximum variance, rather than the best boundaries between compounds.
 
 ### Classifiers
-
-<a id="fig-conf-matrix"></a>
-
-![Confusion matrices](report_assets/rf-lg-svm.png)
-
-*Confusion matrices*
 
 We build simple classifiers using the extracted features to test whether the classes of compounds used to treat the cells can be distinguished based on morphology.
 
@@ -565,31 +550,19 @@ First, it is important to split the data into training and test sets to avoid da
 
 We train four classifiers: Logistic Regression as a simple linear baseline model, Random Forest as a nonlinear baseline model, SVM as a nonlinear margin-based classifier, and Decision Tree as an interpretable model.
 
+<a id="fig-conf-matrix"></a>
+
+![Confusion matrices](report_assets/rf-lg-svm.png)
+
+*Confusion matrices*
+
 Separately, we also train drug-only models without `DMSO`: an SVM and a Random Forest. This allows us to test how well the models distinguish only active treatments without the control class.
-
-For models that are sensitive to feature scale, such as Logistic Regression and SVM, we standardize the features using `StandardScaler()`. We use `class_weight="balanced"` to compensate for class imbalance, so that errors on rarer classes are penalized more strongly.
-
-By default, **Logistic Regression** uses `penalty=L2`: this penalizes overly large model coefficients and helps reduce overfitting. The model also uses standard moderate regularization with `C=1.0` by default: a smaller `C` means stronger regularization, while a larger `C` means weaker regularization.
 
 <a id="fig-drug-conf-matrix"></a>
 
 ![Drug-only confusion matrices](report_assets/drug-conf-matrix.png)
 
 *Drug-only confusion matrices*
-
-The **Random Forest** classifier is an ensemble of many decision trees. Each tree tries to classify a cell based on its morphometric features, and the final prediction is made by voting across the trees. This classifier can capture nonlinear relationships and combinations of features. For example, if `area` is large, `mean_tubulin` is low, and `solidity` is high, the cell may be more likely to belong to `AZ258`.
-
-`n_estimators=300` defines the number of trees in the forest. This value was selected experimentally. The same applies to `max_depth=8`. Tree depth means the number of consecutive split decisions from the root of the tree to a final leaf. In our case, values from 4 to 8 were treated as a reasonable experimental range: with 5 classes, depths below 4 are too shallow to separate the data in principle, while depths above 8 can increase overfitting.
-
-Random Forest uses bootstrap samples. A bootstrap sample is a training subset created by sampling from the original training data with replacement. This means that each tree is trained on a slightly different version of the training set: some cells may appear more than once, while others may be left out. This makes the trees less identical and improves the stability of the ensemble.
-
-A leaf is the final node of a tree where the prediction is made. The smaller `min_samples_leaf` is, the narrower and more specific the rules can become, which increases the risk of overfitting. The larger this parameter is, the less detailed the tree becomes, but the better it may generalize. Thus, `min_samples_leaf=10` prevents the trees from creating rules based on individual cells.
-
-We apply **Support Vector Machine** with an RBF kernel, which allows the model to build nonlinear boundaries between classes. The idea is to maximize the margin between the decision boundary and the closest training points, called support vectors. The RBF kernel allows the model to separate classes using complex curved boundaries.
-
-The regularization parameter `C=1.0` controls the tradeoff between a simpler decision boundary and fewer errors on the training set. A smaller `C` means stronger regularization, producing a simpler and more stable boundary. A larger `C` means weaker regularization: the model tries harder to classify the training points correctly, which increases the risk of overfitting.
-
-On the other hand, the `Gamma` parameter controls how local the influence of individual training points is. A small `gamma` gives a smoother and broader decision boundary; a large `gamma` gives a more complex boundary that adapts more strongly to individual points. We use `"scale"`, meaning that sklearn calculates `gamma` automatically.
 
 Across all classifiers, the confusion matrices ([Figure](#fig-conf-matrix), [Figure](#fig-drug-conf-matrix)) show that the models are not guessing the classes randomly: most values lie on the diagonal, meaning that many cells are classified correctly. `AZ-U` is separated best.
 
