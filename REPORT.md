@@ -84,7 +84,7 @@ For this study, we would like to choose compounds that are as comparable as poss
 | 12 | Protein synthesis | anisomycin, cyclohexamide, emetine |
 
 <details>
-<summary><img src="https://img.shields.io/static/v1?label=&message=Way%20of%20selection&color=30363d&style=flat-square" alt="Way of selection"></summary>
+<summary><strong>Way of selection</strong></summary>
 
 Firstly, compounds from different MoA groups should be selected. This way, we will probably obtain the most morphologically distinct cell phenotypes. This is not guaranteed, but it is likely. The aim of the project is not to conduct an exhaustive analysis, but to test whether, in principle, it is possible to distinguish some phenotypes of cells treated with different compounds using machine learning.
 
@@ -117,7 +117,7 @@ Therefore, the compromise chosen for the project ([Table](#tab-compounds)) is th
 ### Expectations for morphology
 
 <details>
-<summary><img src="https://img.shields.io/static/v1?label=&message=Drugs%20description&color=30363d&style=flat-square" alt="Drugs description"></summary>
+<summary><strong>Drugs description</strong></summary>
 
 `DMSO` is a solvent, used as a control to avoid confusing the effect of the solvent with the effect of the drug; it is not expected to do anything and provides normal cells for comparison.
 
@@ -144,7 +144,7 @@ As shown in the [Figure](#fig-example), DMSO looks like a control condition with
 Each plate is a separate ZIP file of about 700 MB. Downloading all 55 plates would be about 40 GB, which is not necessary for this analysis. 
 
 <details>
-<summary><img src="https://img.shields.io/static/v1?label=&message=Plate%20filtering&color=30363d&style=flat-square" alt="Plate filtering"></summary>
+<summary><strong>Plate filtering</strong></summary>
 
 We want to download the minimum number of ZIP archives while covering as many of the required compounds as possible ([Table](#tab-plates)).
 
@@ -249,7 +249,7 @@ Cellpose is a family of convolutional neural networks. The **`cyto3`** model is 
 *Comparison of Watershed, StarDist and Cellpose*
 
 <details>
-<summary><img src="https://img.shields.io/static/v1?label=&message=Cellpose%20hyperparameters&color=30363d&style=flat-square" alt="Cellpose hyperparameters"></summary>
+<summary><strong>Cellpose hyperparameters</strong></summary>
 
 According to the Cellpose v3.1 documentation, the default parameters are:
 
@@ -315,7 +315,7 @@ The main conclusion is that `flow=0.2` should be excluded. In all panels and for
 Different compounds respond to `diameter` differently because the real cell sizes are very different.
 
 <details>
-<summary><img src="https://img.shields.io/static/v1?label=&message=Drugs%20and%20diameters&color=30363d&style=flat-square" alt="Drugs and diameters"></summary>
+<summary><strong>Drugs and diameters</strong></summary>
 
 **AZ-U** cells are the smallest ones (`Cellpose mean diameter = 43.0`). They are gathered into compact clusters, have blurred boundaries and merged nuclei, sometimes with 3--5 nuclei in one clump, making it difficult to determine where one cell ends and another begins. They are difficult to segment. Therefore, with `d=50`, segmentation is generally acceptable, but some small isolated cells are lost. With `d=70`, and especially with `d=90`, the model starts merging several cells into one and loses cells.
 
@@ -364,7 +364,7 @@ On [Figure](#fig-cellpose-grid-search-auto), we see more subtle and sometimes ev
 The main conclusion is that `diameter=None` works robustly for all compounds, and further parameter tuning gives relatively small changes in cell count.
 
 <details>
-<summary><img src="https://img.shields.io/static/v1?label=&message=Drugs%20and%20parameters&color=30363d&style=flat-square" alt="Drugs and parameters"></summary>
+<summary><strong>Drugs and parameters</strong></summary>
 
 For DMSO, `cp` and `flow` almost do not change the result. Visually ([Figure](#fig-grid-auto-overlays)), there are no sharp changes in segmentation. Slight over-segmentation starts only at the very end, at `cp=2.0, flow=1.0`. At `cp=-2.0`, it is visible that the margins of the masks from the real cell boundaries become larger, but overall the segmentation remains acceptable.
 
