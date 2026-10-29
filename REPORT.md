@@ -200,12 +200,6 @@ StarDist represents nuclei as star-convex polygons predicted from the normalized
 
 The hybrid approach improved marker placement but remained dependent on thresholded cytoskeletal signal for whole-cell boundaries. Its counts were close to Cellpose for most compounds, while AZ258 showed the largest disagreement: StarDist over-segmented small nuclear fragments and missed some large touching nuclei. Without manually annotated whole-cell masks, this comparison is qualitative rather than an accuracy benchmark.
 
-<a id="fig-watershed-stardist-cellpose"></a>
-
-![Comparison of Watershed, StarDist and Cellpose](report_assets/watershed-stardist-cellpose.png)
-
-*Comparison of Watershed, StarDist and Cellpose*
-
 <a id="fig-az258-short"></a>
 
 ![Nuclei segmentation comparison between StarDist and Cellpose for AZ258](report_assets/az258-stardist-cellpose-nuclei-short.png)
@@ -242,6 +236,12 @@ Cellpose is a family of convolutional neural networks. The **`cyto3`** model is 
 
 - **cytoplasm** -- actin, which shows the overall cell shape;
 - **nuclei** -- DAPI.
+
+<a id="fig-watershed-stardist-cellpose"></a>
+
+![Comparison of Watershed, StarDist and Cellpose](report_assets/watershed-stardist-cellpose.png)
+
+*Comparison of Watershed, StarDist and Cellpose*
 
 <details>
 <summary><strong>Cellpose hyperparameters</strong></summary>
