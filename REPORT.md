@@ -83,6 +83,9 @@ For this study, we would like to choose compounds that are as comparable as poss
 | 11 | Protein degradation | ALLN, MG-132, lactacystin, proteasome inhibitor I |
 | 12 | Protein synthesis | anisomycin, cyclohexamide, emetine |
 
+<details>
+<summary><strong>Way of selection</strong></summary>
+
 Firstly, compounds from different MoA groups should be selected. This way, we will probably obtain the most morphologically distinct cell phenotypes. This is not guaranteed, but it is likely. The aim of the project is not to conduct an exhaustive analysis, but to test whether, in principle, it is possible to distinguish some phenotypes of cells treated with different compounds using machine learning.
 
 Secondly, the compounds have different concentrations, and even different concentration ranges, which also leads us to the assumption that we need to choose compounds with a similar concentration profile.
@@ -94,6 +97,8 @@ We know that the dataset includes 8 concentrations for each compound. However, t
 In order not to make the dataset too large while testing the hypothesis, we will choose 4 compounds from different MoA groups among those that have 3 concentrations of a close order of magnitude, plus DMSO as the control.
 
 Notable, we will not compare numerically equal concentrations of different compounds, because this would be incorrect. A concentration of 1.0 for Taxol and 1.0 for Etoposide are not necessarily biologically comparable in terms of effect strength. One compound may already have an effect at the minimum concentration, while another may require a 10 times higher concentration to produce some effect.
+
+</details>
 
 Therefore, the compromise chosen for the project ([Table](#tab-compounds)) is that each selected compound will have a low, medium, and high dose within that compound itself.
 
