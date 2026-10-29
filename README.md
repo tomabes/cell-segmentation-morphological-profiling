@@ -2,7 +2,7 @@
 
 End-to-end microscopy workflow for segmenting drug-treated MCF-7 breast cancer cells, extracting morphometric features and testing whether cell morphology can distinguish treatment conditions. The project uses the public [BBBC021 dataset](https://bbbc.broadinstitute.org/BBBC021).
 
-[Open the notebook with outputs in Google Colab](https://colab.research.google.com/drive/1EOPU8AgNrdOFhd61035fZIoDfvqkdfvW)
+[Open the notebook with outputs in Google Colab](https://colab.research.google.com/drive/1EOPU8AgNrdOFhd61035fZIoDfvqkdfvW) · [Read the full project report](REPORT.md)
 
 ![Project pipeline](assets/pipeline.png)
 
