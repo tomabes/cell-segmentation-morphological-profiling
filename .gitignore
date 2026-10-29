@@ -1,0 +1,11 @@
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+.venv/
+data/
+cache/
+masks/
+*.npy
+*.npz
+*.parquet
+*.zip
