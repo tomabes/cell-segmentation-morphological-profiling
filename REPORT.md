@@ -268,7 +268,7 @@ Cellpose uses the diameter to rescale the image before segmentation. The v3 cyto
 
 ![cellpose grid search overlays diameters short](report_assets/cellpose-grid-search-overlays-diameters-short.png)
 
-*cellpose grid search overlays diameters short*
+*Сellpose grid search overlays for diameters*
 
 Automatic diameter estimation is a two-step procedure. Cellpose first runs the image through the network and obtains a style vector, then uses a linear regression model to estimate object size. The image is resized according to this estimate, Cellpose is run again, and the final diameter is refined from the median diameter of the predicted ROIs. If the specified diameter is too small, Cellpose may over-split cells; if it is too large, neighbouring cells may be merged.
 
@@ -635,10 +635,6 @@ It would also be valuable to integrate human-guided annotation or segmentation t
 
 We also began to check (in Appendix) whether cell morphology differs across concentrations. We originally downloaded the subset so that each compound, except DMSO, had three concentrations. For the main analysis, we used the middle concentration. We then use all three concentrations and plot the number of segmented cells and morphological features as a function of concentration. This analysis could be explored in more depth in the future.
 
-## Code Availability
-
-The code, source-only notebook and project assets are available in this repository. The executed notebook with outputs is linked from the main README.
-
 ## References
 
 - [Beucher and Lantuejoul, 1979. *Use of Watersheds in Contour Detection*](https://www.researchgate.net/publication/230837383_Use_of_Watersheds_in_Contour_Detection)
@@ -652,26 +648,6 @@ The code, source-only notebook and project assets are available in this reposito
 - [Cellpose documentation. *Cellpose documentation*](https://cellpose.readthedocs.io/en/latest/)
 
 ## Appendix
-
-<a id="table-short-list-of-compounds-their-moa-groups-and-concentrations"></a>
-
-**Short list of compounds, their MoA groups, and concentrations**
-
-| Index | moa | compound | concentrations |
-| --- | --- | --- | --- |
-| 4 | Aurora kinase inhibitors | AZ258 | [0.1, 0.3, 1.0] |
-| 5 | Aurora kinase inhibitors | AZ841 | [0.1, 0.3, 1.0] |
-| 6 | Cholesterol-lowering | mevinolin/lovastatin | [1.5, 5.0, 15.0] |
-| 7 | Cholesterol-lowering | simvastatin | [2.0, 6.0, 20.0] |
-| 11 | DNA damage | etoposide | [1.0, 3.0, 10.0] |
-| 13 | DNA replication | camptothecin | [0.003, 0.01, 0.03] |
-| 19 | Epithelial | AZ-J | [1.0, 3.0, 10.0] |
-| 20 | Epithelial | AZ-U | [1.0, 3.0, 10.0] |
-| 29 | Microtubule stabilizers | docetaxel | [0.03, 0.1, 0.3] |
-| 30 | Microtubule stabilizers | epothilone B | [0.1, 0.3, 1.0] |
-| 31 | Microtubule stabilizers | taxol | [0.3, 1.0, 3.0] |
-| 37 | Protein synthesis | cyclohexamide | [5.0, 15.0, 50.0] |
-| 38 | Protein synthesis | emetine | [0.1, 0.3, 1.0] |
 
 <a id="table-precision-and-recall"></a>
 
@@ -690,21 +666,3 @@ The code, source-only notebook and project assets are available in this reposito
 ![Cellpose flows and cell probability](report_assets/cellpose-flows-and-cellprob.png)
 
 *Cellpose flows and cell probability*
-
-<a id="tab-pca-feature-loadings-ranked"></a>
-
-**PCA feature loadings**
-
-| Index | PC1 (45.7%) | PC2 (25.0%) | PC3 (11.2%) |
-| --- | --- | --- | --- |
-| minor_axis_length | 0.41 | -0.20 | 0.12 |
-| major_axis_length | 0.41 | 0.17 | 0.14 |
-| area | 0.43 | -0.08 | 0.16 |
-| perimeter | 0.43 | 0.08 | 0.15 |
-| equivalent_diameter | 0.44 | -0.06 | 0.13 |
-| mean_actin | -0.23 | -0.05 | 0.66 |
-| mean_tubulin | -0.22 | -0.04 | 0.68 |
-| extent | -0.02 | -0.49 | -0.06 |
-| aspect_ratio | -0.01 | 0.52 | 0.02 |
-| solidity | -0.05 | -0.40 | -0.08 |
-| eccentricity | -0.01 | 0.50 | -0.01 |
