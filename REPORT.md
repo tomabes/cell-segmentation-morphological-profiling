@@ -2,8 +2,6 @@
 
 **Tamara Besedina · MLDM**
 
-This report documents the complete methodology, experiments and results behind the repository. It is adapted from the original LaTeX project report for web reading; the Watershed and StarDist background sections are intentionally condensed.
-
 ## Introduction
 
 High-content imaging (high-throughput microscopy) is widely used to study how biological samples respond to chemical exposure. For example, some drug compounds may change morphological characteristics in cells by affecting cytoskeleton, DNA replication, or protein regulation. These changes create a measurable phenotypic fingerprint: cells may change their shape, size, nuclear morphology, actin organisation, or microtubule structure depending on the compound's mechanism of action.
