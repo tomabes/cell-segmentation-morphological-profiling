@@ -86,6 +86,8 @@ For this study, we would like to choose compounds that are as comparable as poss
 <details>
 <summary><strong>Way of selection</strong></summary>
 
+<blockquote>
+
 Firstly, compounds from different MoA groups should be selected. This way, we will probably obtain the most morphologically distinct cell phenotypes. This is not guaranteed, but it is likely. The aim of the project is not to conduct an exhaustive analysis, but to test whether, in principle, it is possible to distinguish some phenotypes of cells treated with different compounds using machine learning.
 
 Secondly, the compounds have different concentrations, and even different concentration ranges, which also leads us to the assumption that we need to choose compounds with a similar concentration profile.
@@ -97,6 +99,8 @@ We know that the dataset includes 8 concentrations for each compound. However, t
 In order not to make the dataset too large while testing the hypothesis, we will choose 4 compounds from different MoA groups among those that have 3 concentrations of a close order of magnitude, plus DMSO as the control.
 
 Notable, we will not compare numerically equal concentrations of different compounds, because this would be incorrect. A concentration of 1.0 for Taxol and 1.0 for Etoposide are not necessarily biologically comparable in terms of effect strength. One compound may already have an effect at the minimum concentration, while another may require a 10 times higher concentration to produce some effect.
+
+</blockquote>
 
 </details>
 
@@ -119,6 +123,8 @@ Therefore, the compromise chosen for the project ([Table](#tab-compounds)) is th
 <details>
 <summary><strong>Drugs description</strong></summary>
 
+<blockquote>
+
 `DMSO` is a solvent, used as a control to avoid confusing the effect of the solvent with the effect of the drug; it is not expected to do anything and provides normal cells for comparison.
 
 `Lovastatin` can act through the mevalonate pathway, blocking cholesterol synthesis as well as the production of small molecules needed by some proteins to function properly and attach to cell membranes. Therefore, we can expect the cells to contract, become more rounded and sparse, and lose tight contacts with neighboring cells.
@@ -128,6 +134,8 @@ Therefore, the compromise chosen for the project ([Table](#tab-compounds)) is th
 `Etoposide` is a DNA-damaging compound that can arrest cells in the phase before division. Expected effects include changes in nuclear morphology, cell-cycle arrest or cell death in part of the population, and a possible decrease in cell density.
 
 `AZ258` is an Aurora kinase inhibitor, disrupting the process of cell division regulated by Aurora kinase; expected effects include disruption of the mitotic spindle, chromosome segregation errors, cell-cycle arrest, apoptosis, cells becoming stuck in mitosis, rounded morphology, and abnormal nuclei.
+
+</blockquote>
 
 </details>
 
@@ -145,6 +153,8 @@ Each plate is a separate ZIP file of about 700 MB. Downloading all 55 plates wou
 
 <details>
 <summary><strong>Plate filtering</strong></summary>
+
+<blockquote>
 
 We want to download the minimum number of ZIP archives while covering as many of the required compounds as possible ([Table](#tab-plates)).
 
@@ -180,6 +190,8 @@ We will also take the middle concentrations of the compounds for the main analys
 Nevertheless, we cannot confidently claim that all observed differences are due to the drug effect rather than plate or well effects. Hundreds of cells from the same plate or field of view cannot be treated as fully independent observations.
 
 We will also take DMSO from all plates to check whether the controls from different plates are comparable (no batch or plate effect).
+
+</blockquote>
 
 </details>
 
@@ -251,6 +263,8 @@ Cellpose is a family of convolutional neural networks. The **`cyto3`** model is 
 <details>
 <summary><strong>Cellpose hyperparameters</strong></summary>
 
+<blockquote>
+
 According to the Cellpose v3.1 documentation, the default parameters are:
 
 - `diameter=None` (auto-estimation)
@@ -288,6 +302,8 @@ This parameter is a mask-quality filter. After Cellpose predicts flows and const
 - Higher values are more permissive: more ROIs are retained, but some may have poor or biologically implausible shapes.
 - Increasing `flow_threshold` can help if Cellpose returns fewer ROIs than expected; decreasing it can help if too many ill-shaped ROIs are accepted.
 
+</blockquote>
+
 </details>
 
 ### Grid search with set diameter
@@ -317,6 +333,8 @@ Different compounds respond to `diameter` differently because the real cell size
 <details>
 <summary><strong>Drugs and diameters</strong></summary>
 
+<blockquote>
+
 **AZ-U** cells are the smallest ones (`Cellpose mean diameter = 43.0`). They are gathered into compact clusters, have blurred boundaries and merged nuclei, sometimes with 3--5 nuclei in one clump, making it difficult to determine where one cell ends and another begins. They are difficult to segment. Therefore, with `d=50`, segmentation is generally acceptable, but some small isolated cells are lost. With `d=70`, and especially with `d=90`, the model starts merging several cells into one and loses cells.
 
 **Lovastatin** cells are slightly larger (`Cellpose mean diameter = 56.7`), but very heterogeneous: some are merged with unclear nuclei and boundaries, while others are large and have long protrusions. They form clusters, but fewer than AZ-U and the other compounds; they are more sparse, but not isolated. This makes them difficult to segment. Therefore, with `d=50`, they are generally segmented reasonably well, but small cells are lost because the fixed diameter is too large for them. With `d=70` and above, clear under-segmentation appears.
@@ -326,6 +344,8 @@ Different compounds respond to `diameter` differently because the real cell size
 **Etoposide** cells are larger mainly because of protrusions (`Cellpose mean diameter = 80.7`). They lie close to each other, but their boundaries are blurred. They have protrusions that the model identifies as separate cells, and none of the tested Cellpose parameters can fully solve this. However, the nuclei are clear, so the overall segmentation difficulty is moderate. They are segmented well with `d=70/90`, while with `d=50` the cells are slightly fragmented.
 
 **AZ258** cells are the largest in the dataset (`Cellpose mean diameter = 96.3`). They mostly lie close to each other, have fairly clear contours and large nuclei, and are relatively convenient for segmentation. For them, `d=50/70` are clearly too small and increase the number of segmented cells by cutting large cells into pieces or by narrowing mask boundaries so that they do not reach the real cell borders. At the same time, even `d=90` is not ideal, because a large dim cell is clearly under-segmented or split in half. This shows that with a fixed diameter, information about very large but real cells is lost.
+
+</blockquote>
 
 </details>
 
@@ -366,6 +386,8 @@ The main conclusion is that `diameter=None` works robustly for all compounds, an
 <details>
 <summary><strong>Drugs and parameters</strong></summary>
 
+<blockquote>
+
 For DMSO, `cp` and `flow` almost do not change the result. Visually ([Figure](#fig-grid-auto-overlays)), there are no sharp changes in segmentation. Slight over-segmentation starts only at the very end, at `cp=2.0, flow=1.0`. At `cp=-2.0`, it is visible that the margins of the masks from the real cell boundaries become larger, but overall the segmentation remains acceptable.
 
 For AZ258, the absence of a strong effect is even more pronounced: in general, all parameters are acceptable, because the cells are large, clear, high-contrast, and do not have many protrusions. This is interesting that even the mask boundaries and cell boundaries generally match well, because most cells are densely packed.
@@ -375,6 +397,8 @@ For Lovastatin, `cp=-2.0, flow=0.4` is definitely unsuitable because cells are l
 AZ-U is a difficult case. The baseline with default parameters is definitely unsuitable for it, as are some negative `cp` values and even `cp=1.0, flow=0.4`, because of under-segmentation. At `cp>=2.0`, part of the cells is already cut off and very small cells are created from cytoplasm. Therefore, the working zone for AZ-U lies at the intersection of `flow=0.6/0.8` and `cp=-2.0/-1.0/0.0/1.0`, although there is still slight under-segmentation and slight over-segmentation of small cell fragments.
 
 For Etoposide, the default parameters are also unsuitable because cells are lost. However, the other parameters are acceptable, although negative `cp` values expand the mask boundaries compared with the cell boundaries. The most optimal choice is at the intersection of `flow=0.6/0.8` and `cp=0.0--2`.
+
+</blockquote>
 
 </details>
 
