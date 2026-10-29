@@ -9,10 +9,11 @@ End-to-end microscopy workflow for segmenting drug-treated MCF-7 breast cancer c
 ## What this project does
 
 - compares classical watershed, StarDist-guided watershed and Cellpose `cyto3` for whole-cell segmentation;
-- tunes Cellpose parameters and preprocessing for three-channel fluorescence microscopy;
-- extracts 11 interpretable size, shape and intensity features from individual cells;
-- applies quality control and retains 3,179 cells for the main analysis;
-- evaluates Random Forest classifiers on held-out microscopy fields rather than random cells.
+- preprocesses the DAPI, beta-tubulin and actin channels independently using 1st–99th percentile normalization, and evaluates actin-only input against merged actin/tubulin input with CLAHE (`clip_limit=0.01`, `kernel_size=512`);
+- explores Cellpose `diameter={auto, 50, 70, 90}`, `cellprob_threshold={-1.0, -0.5, 0.0, 1.0}` and `flow_threshold={0.2, 0.4, 0.6, 0.8, 1.0}`; the final pipeline uses automatic diameter estimation, `cellprob_threshold=0.0` and `flow_threshold=0.8`;
+- extracts 11 interpretable features: area, perimeter, equivalent diameter, major and minor axis lengths, eccentricity, aspect ratio, solidity, extent, mean actin intensity and mean tubulin intensity;
+- removes border-touching objects and masks outside the 300–25,000 px area range, retaining 3,179 cells for the main analysis;
+- evaluates class-balanced Random Forest classifiers with 300 trees, `max_depth=8`, `max_features="sqrt"` and `min_samples_leaf=10` on a stratified 75/25 split of entire microscopy fields.
 
 ## Results
 
@@ -20,7 +21,7 @@ The main classifier reached **0.67 accuracy** and **0.63 macro F1** on held-out 
 
 ![Segmentation comparison](assets/segmentation-comparison.png)
 
-![Morphometric PCA](assets/morphometry-pca.png)
+[View morphometric feature pairplots (PDF)](assets/morphometry_pairplots.pdf)
 
 ![Random Forest confusion matrix](assets/random-forest-confusion-matrix.png)
 
@@ -34,7 +35,7 @@ notebooks/
 assets/
   pipeline.png
   segmentation-comparison.png
-  morphometry-pca.png
+  morphometry_pairplots.pdf
   random-forest-confusion-matrix.png
 requirements.txt
 ```
