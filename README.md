@@ -15,18 +15,6 @@ End-to-end microscopy workflow for segmenting drug-treated MCF-7 breast cancer c
 - applies quality control and retains 3,179 cells for the main analysis;
 - evaluates Random Forest classifiers.
 
-## Results
-
-The main classifier reached **0.67 accuracy** and **0.63 macro F1** on held-out fields. A drug-only experiment, excluding the DMSO control, reached **0.72 accuracy** and **0.67 macro F1** on 507 cells.
-
-![Segmentation comparison](assets/segmentation-comparison.png)
-
-![Morphometric PCA](assets/morphometry-pairplots.png)
-
-![Random Forest confusion matrix](assets/random-forest-confusion-matrix.png)
-
-The dataset does not include manual whole-cell masks. The segmentation-method comparison is therefore qualitative and based on overlays and count consistency.
-
 ## Repository structure
 
 ```text
@@ -34,15 +22,14 @@ notebooks/
   cell_segmentation_morphological_profiling.ipynb
 assets/
   pipeline.png
-  segmentation-comparison.png
-  morphometry-pairplots.png
-  random-forest-confusion-matrix.png
+README.md
+REPORT.md
+Full_report.pdf
+Slides.pdf
 requirements.txt
 ```
 
 The notebook is committed without cell outputs. The original executed notebook exceeded GitHub's file limit and can be seen on Google Colab.
-
-## Run the project
 
 [Google Colab](https://colab.research.google.com/drive/1EOPU8AgNrdOFhd61035fZIoDfvqkdfvW) is the recommended environment because Cellpose, StarDist and their dependencies are computationally demanding.
 
