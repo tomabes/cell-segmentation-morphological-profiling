@@ -44,7 +44,7 @@ The notebook is committed without cell outputs. The original executed notebook e
 
 ## Run the project
 
-Google Colab is the recommended environment because Cellpose, StarDist and their dependencies are computationally demanding.
+[Google Colab](https://colab.research.google.com/drive/1EOPU8AgNrdOFhd61035fZIoDfvqkdfvW) is the recommended environment because Cellpose, StarDist and their dependencies are computationally demanding.
 
 The notebook downloads the selected BBBC021 image plates during execution.
 
