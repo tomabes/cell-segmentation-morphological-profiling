@@ -21,7 +21,9 @@ End-to-end microscopy workflow for segmenting drug-treated MCF-7 breast cancer c
 notebooks/
   cell_segmentation_morphological_profiling.ipynb
 assets/
-  pipeline.png
+  ...
+  images.png
+  ...
 README.md
 REPORT.md
 Full_report.pdf
