@@ -13,7 +13,7 @@ End-to-end microscopy workflow for segmenting drug-treated MCF-7 breast cancer c
 - tunes Cellpose parameters (diameter, cell probability threshold, flow threshold, channels)
 - extracts 11 interpretable size, shape and intensity features from individual cells;
 - applies quality control and retains 3,179 cells for the main analysis;
-- evaluates Random Forest classifiers.
+- train and test classifiers.
 
 ## Repository structure
 
